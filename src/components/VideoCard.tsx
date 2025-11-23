@@ -195,22 +195,30 @@ export default function VideoCard({
   );
 
   const handleClick = useCallback(() => {
-    if (from === 'douban') {
-      router.push(
-        `/play?title=${encodeURIComponent(actualTitle.trim())}${
+    const buildUrl = () => {
+      if (from === 'douban') {
+        return `/play?title=${encodeURIComponent(actualTitle.trim())}${
           actualYear ? `&year=${actualYear}` : ''
-        }${actualSearchType ? `&stype=${actualSearchType}` : ''}`
-      );
-    } else if (actualSource && actualId) {
-      router.push(
-        `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
+        }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
+      } else if (actualSource && actualId) {
+        return `/play?source=${actualSource}&id=${actualId}&title=${encodeURIComponent(
           actualTitle
         )}${actualYear ? `&year=${actualYear}` : ''}${
           isAggregate ? '&prefer=true' : ''
         }${
           actualQuery ? `&stitle=${encodeURIComponent(actualQuery.trim())}` : ''
-        }${actualSearchType ? `&stype=${actualSearchType}` : ''}`
-      );
+        }${actualSearchType ? `&stype=${actualSearchType}` : ''}`;
+      }
+      return '';
+    };
+
+    const url = buildUrl();
+    if (url) {
+      if (from === 'search') {
+        window.open(url, '_blank');
+      } else {
+        router.push(url);
+      }
     }
   }, [
     from,
