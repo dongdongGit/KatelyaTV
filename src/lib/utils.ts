@@ -5,6 +5,21 @@ import Hls from 'hls.js';
 /**
  * 获取图片代理 URL 设置
  */
+// 检查代理 URL 是否安全（仅允许 http/https 协议的绝对 URL）
+export function isSafeProxyUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return true;
+    }
+    // 禁止其他协议如 "javascript:", "data:", 等
+    return false;
+  } catch {
+    // 非法 URL
+    return false;
+  }
+}
+
 export function getImageProxyUrl(): string | null {
   if (typeof window === 'undefined') return null;
 
@@ -18,14 +33,21 @@ export function getImageProxyUrl(): string | null {
 
   const localImageProxy = localStorage.getItem('imageProxyUrl');
   if (localImageProxy != null) {
-    return localImageProxy.trim() ? localImageProxy.trim() : null;
+    const trimmed = localImageProxy.trim();
+    if (trimmed && isSafeProxyUrl(trimmed)) {
+      return trimmed;
+    }
+    // 如果不安全，忽略
+    return null;
   }
 
   // 如果未设置，则使用全局对象
   const serverImageProxy = (window as any).RUNTIME_CONFIG?.IMAGE_PROXY;
-  return serverImageProxy && serverImageProxy.trim()
-    ? serverImageProxy.trim()
-    : null;
+  // 允许全局配置为空；如有则需校验
+  if (serverImageProxy && serverImageProxy.trim() && isSafeProxyUrl(serverImageProxy.trim())) {
+    return serverImageProxy.trim();
+  }
+  return null;
 }
 
 /**
