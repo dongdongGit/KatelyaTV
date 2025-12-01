@@ -214,7 +214,7 @@ export default function VideoCard({
 
     const url = buildUrl();
     if (url) {
-      if (from === 'search') {
+      if (from === 'search' || from === 'playrecord') {
         window.open(url, '_blank');
       } else {
         router.push(url);
